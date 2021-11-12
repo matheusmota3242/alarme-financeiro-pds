@@ -26,6 +26,14 @@ public class ParametroAcao implements Serializable {
 	@NonNull
 	private Float valor;
 	
+	public Integer getId() {
+		return id;
+	}
+	
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	
 	public String getTiquete() {
 		return tiquete;
 	}

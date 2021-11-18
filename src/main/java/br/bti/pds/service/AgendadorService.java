@@ -1,6 +1,7 @@
 package br.bti.pds.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -27,13 +28,23 @@ public class AgendadorService {
 	public void agendarConsulta() {
 		List<ParametroAcao> parametrosAcao = service.recuperarTodos();
 		parametrosAcao.forEach(parametroAcao -> {
-			try {
-				Stock acao = YahooFinance.get(parametroAcao.getTiquete());
+			aplicarLogicaParaDisparoDePushNotification(parametroAcao);
+		});
+	}
+	
+	private void aplicarLogicaParaDisparoDePushNotification(ParametroAcao parametroAcao) {
+		try {
+			Stock acao = YahooFinance.get(parametroAcao.getTiquete());
+			if (compararValorParametroComPrecoAcao(parametroAcao.getValor(), acao.getQuote().getPrice())) {
 				fcmService.sendMessageToToken(new PushNotificationRequest(acao.getName(), null, null, null));
 				service.remover(parametroAcao.getId());
-			} catch (IOException | NotFoundException | InterruptedException | ExecutionException e) {
-				e.printStackTrace();
 			}
-		});
+		} catch (IOException | NotFoundException | InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private boolean compararValorParametroComPrecoAcao(Float valorParametroAcao, BigDecimal precoAcao) {
+		return valorParametroAcao >= Float.parseFloat(precoAcao.toString());
 	}
 }

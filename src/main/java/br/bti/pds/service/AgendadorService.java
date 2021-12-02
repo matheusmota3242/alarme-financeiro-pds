@@ -24,7 +24,9 @@ public class AgendadorService {
 	@Autowired
 	private FCMService fcmService;
 	
-	@Scheduled(fixedDelay = 7000)
+	private static String CORPO_MENSAGEM = "Preço atual: %s\nParâmetro: %s";
+	
+	@Scheduled(fixedDelay = 15000)
 	public void agendarConsulta() {
 		List<ParametroAcao> parametrosAcao = service.recuperarTodos();
 		parametrosAcao.forEach(parametroAcao -> {
@@ -36,8 +38,10 @@ public class AgendadorService {
 		try {
 			Stock acao = YahooFinance.get(parametroAcao.getTiquete());
 			if (compararValorParametroComPrecoAcao(parametroAcao.getValor(), acao.getQuote().getPrice())) {
-				fcmService.sendMessageToToken(new PushNotificationRequest(acao.getName(), null, null, null));
+				fcmService.sendMessageToToken(new PushNotificationRequest(acao.getSymbol(), String.format(CORPO_MENSAGEM, acao.getQuote().getPrice().toString(), parametroAcao.getValor().toString()), null, parametroAcao.getToken()));
 				service.remover(parametroAcao.getId());
+			} else {
+				System.out.println("Parâmetro: "+parametroAcao.getValor().toString()+"\n"+ "Preço atual: "+acao.getQuote().getPrice().toString());
 			}
 		} catch (IOException | NotFoundException | InterruptedException | ExecutionException e) {
 			e.printStackTrace();

@@ -47,22 +47,17 @@ public class FCMService {
                 .setNotification(AndroidNotification.builder()
                       .setTag(topic).build()).build();
     }
+    
     private ApnsConfig getApnsConfig(String topic) {
         return ApnsConfig.builder()
                 .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build()).build();
     }
+    
     private Message getPreconfiguredMessageToToken(PushNotificationRequest request) {
         return getPreconfiguredMessageBuilder(request).setToken(request.getToken())
                 .build();
     }
-    private Message getPreconfiguredMessageWithoutData(PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).setTopic(request.getTopic())
-                .build();
-    }
-    private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).putAllData(data).setToken(request.getToken())
-                .build();
-    }
+
     private Message.Builder getPreconfiguredMessageBuilder(PushNotificationRequest request) {
         AndroidConfig androidConfig = getAndroidConfig(request.getTopic());
         ApnsConfig apnsConfig = getApnsConfig(request.getTopic());

@@ -23,8 +23,11 @@ public class ParametroAcao implements Serializable {
 	
 	@NonNull
 	private String tiquete;
+	
 	@NonNull
 	private Float valor;
+	
+	private String token;
 	
 	public Integer getId() {
 		return id;
@@ -46,10 +49,17 @@ public class ParametroAcao implements Serializable {
 	public void setValor(Float valor) {
 		this.valor = valor;
 	}
+	
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 	@Override
 	public String toString() {
-		return "ParametroAcao [tiquete=" + tiquete + ", valor=" + valor + "]";
-	}
-	
-	
+		return "ParametroAcao [id=" + id + ", tiquete=" + tiquete + ", valor=" + valor + ", token=" + token + "]";
+	}	
 }

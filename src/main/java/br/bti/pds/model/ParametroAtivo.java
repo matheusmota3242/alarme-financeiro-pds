@@ -6,46 +6,53 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.lang.NonNull;
 
 @Entity
-public class ParametroAcao implements Serializable {
+public class ParametroAtivo implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1336149664628001668L;
-	
+		
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer id;
 	
-	@NonNull
-	private String tiquete;
+	@NotEmpty(message = "O campo simbolo nao pode ser nulo")
+	private String simbolo;
 	
-	@NonNull
-	private Float valor;
+	@NotEmpty(message = "O campo tipoAtivo nao pode ser nulo")
+	private String tipoAtivo;
+
+	@NotNull(message = "O campo valor nao pode ser nulo")
+	protected Float valor;
 	
-	private String token;
+	@NotEmpty(message = "O campo token nao pode ser nulo")
+	protected String token;
 	
 	public Integer getId() {
 		return id;
 	}
-	
 	public void setId(Integer id) {
 		this.id = id;
 	}
 	
-	public String getTiquete() {
-		return tiquete;
+	public String getSimbolo() {
+		return simbolo;
 	}
-	public void setTiquete(String tiquete) {
-		this.tiquete = tiquete;
+	public void setSimbolo(String simbolo) {
+		this.simbolo = simbolo;
 	}
+	
 	public Float getValor() {
 		return valor;
 	}
+	
 	public void setValor(Float valor) {
 		this.valor = valor;
 	}
@@ -57,9 +64,12 @@ public class ParametroAcao implements Serializable {
 	public void setToken(String token) {
 		this.token = token;
 	}
-
-	@Override
-	public String toString() {
-		return "ParametroAcao [id=" + id + ", tiquete=" + tiquete + ", valor=" + valor + ", token=" + token + "]";
-	}	
+	
+	public String getTipoAtivo() {
+		return tipoAtivo;
+	}
+	
+	public void setTipoAtivo(String tipoAtivo) {
+		this.tipoAtivo = tipoAtivo;
+	}
 }

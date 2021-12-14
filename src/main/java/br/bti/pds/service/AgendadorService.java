@@ -35,7 +35,7 @@ public class AgendadorService {
 
 	private static String CORPO_MENSAGEM = "Ativo: %s\nPreço atual: %s\nParâmetro: %s";
 
-	@Scheduled(fixedDelay = 15000)
+	@Scheduled(fixedDelay = 30000)
 	public void agendarConsulta() {
 		List<ParametroAtivo> parametrosAcao = parametroAtivoService.recuperarTodos();
 		parametrosAcao.forEach(ParametroAtivo -> {

@@ -81,6 +81,6 @@ public class ParametroAtivoFacade {
 
 	public boolean validarExistenciaAcao(String simbolo) throws AcaoInvalidaException {
 		Stock acao = consultarAcao(simbolo);
-		return null != acao;
+		return null != acao && null != acao.getCurrency();
 	}
 }

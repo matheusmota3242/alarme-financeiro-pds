@@ -21,6 +21,9 @@ import br.bti.pds.model.ParametroAtivo;
 import br.bti.pds.service.ParametroAtivoService;
 import javassist.NotFoundException;
 
+
+
+
 @RestController
 @RequestMapping("parametro-ativo")
 public class ParametroAtivoController {
@@ -54,7 +57,6 @@ public class ParametroAtivoController {
 		} catch (NotFoundException e) {
 			return new ResponseEntity<>("Causa: " + e.getMessage(), HttpStatus.BAD_REQUEST); 
 		}
-		
 	}
 	
 	@DeleteMapping("/remover")

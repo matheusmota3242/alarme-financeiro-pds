@@ -1,8 +1,5 @@
 package br.bti.pds.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.bti.pds.exception.ErroConsultaApiCriptomoedaException;
 import br.bti.pds.model.Criptomoeda;
-import br.bti.pds.model.ParametroCriptomoeda;
 import br.bti.pds.service.facade.CriptomoedaFacade;
 
 @Service
@@ -27,10 +23,7 @@ public class CriptomoedaService {
 		return extrairObjeto(response.getBody());
 	}
 
-	public ParametroCriptomoeda salvar(ParametroCriptomoeda parametroCriptomoeda) {
-		return facade.salvar(parametroCriptomoeda);
-	}
-	
+
 	private Criptomoeda extrairObjeto(String body) {
 		Criptomoeda criptomoeda = null;
 		try {

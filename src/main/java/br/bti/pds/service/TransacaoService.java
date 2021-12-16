@@ -1,97 +1,111 @@
 package br.bti.pds.service;
 
-import br.bti.pds.model.Transacao;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-
-import com.google.gson.JsonArray;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import br.bti.pds.enumeration.TipoAtivo;
+import br.bti.pds.exception.ErroConsultaApiCriptomoedaException;
+import br.bti.pds.model.Criptomoeda;
+import br.bti.pds.model.ResultadoTransacoes;
+import br.bti.pds.model.Transacao;
+import br.bti.pds.service.facade.TransacaoFacade;
 import yahoofinance.Stock;
 
-import java.util.ArrayList;
-
+@Service
 public class TransacaoService {
 
-    @Autowired
-    private AcaoService acaoService;
-
-    @Autowired
-    private CriptomoedaService criptomoedaService;
-
-    ArrayList<Transacao> listaTransacoes;
-
-    public void addTransacao(Transacao transacao) {
-        Transacao inserir = new Transacao(transacao.getSimbolo(), transacao.getTipoAtivo(), transacao.getTipoOperacao(), transacao.getValorCompra());
-
-
-        try {
-            Stock acao = acaoService.consultarAcao(transacao.getSimbolo());
-            inserir.setValorAtual(acao.getQuote().getPrice().floatValue());
-
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        listaTransacoes.add(inserir);
+	@Autowired
+	private TransacaoFacade facade;
+	
+	@Autowired
+	private AcaoService acaoService;
+	
+	@Autowired
+	private CriptomoedaService criptomoedaService;
+	
+    public Transacao salvar(Transacao transacao) throws Exception {
+    	boolean resultado = false;
+    	transacao.setSimbolo(transacao.getSimbolo().toLowerCase());
+    	if (transacao.getTipoOperacao().equals("VENDA")) {
+    		transacao.setValorTransacao(transacao.getValorTransacao()*(-1));
+    	}
+    	if (transacao.getTipoAtivo().equals(TipoAtivo.ACAO.name())) {
+    		Stock stock = acaoService.consultarAcao(transacao.getSimbolo());
+    		if (stock != null) {
+    			transacao.setValorAtual(stock.getQuote().getPrice().floatValue());
+        		resultado = true;
+    			return facade.salvar(transacao);
+        	}
+    	} else if (transacao.getTipoAtivo().equals(TipoAtivo.CRIPTOMOEDA.name())) {
+    		Criptomoeda criptomoeda = criptomoedaService.consultar(transacao.getSimbolo());
+    		transacao.setValorAtual(criptomoeda.getPreco());
+    		if (criptomoeda != null) {
+    			
+    			resultado = true;
+    		}
+    		
+    	}
+    	
+    	if (!resultado) {
+    		throw new Exception("Erro ao persistir transação.");
+    	}
+    	
+    	return facade.salvar(transacao);
+    		
     }
-
-
-    public JSONArray recuperarTransacoes(){
-
-        //preciso pegar o valor atual do ativo para comparar
-
-        JSONArray jsonArray = new JSONArray();
-
-
-
-        ArrayList<String> jaVerificados = new ArrayList<>();
-        for (int i = 0; i <listaTransacoes.size();i++){
-            JSONObject jsonObject = new JSONObject();
-
-            if( !(jaVerificados.contains(listaTransacoes.get(i).getSimbolo())) ){
-                jaVerificados.add(listaTransacoes.get(i).getSimbolo());
-
-                float somatorio = 0;
-                for(int j=i;j<listaTransacoes.size();j++){
-                    if(listaTransacoes.get(j).getSimbolo().equals(listaTransacoes.get(i).getSimbolo())){
-                        somatorio += listaTransacoes.get(j).getValorCompra();
-                    }
-                }
-                // após esse for, comparar com o valor da ação
-                if(somatorio > 0){
-                    try {
-                        Stock acao = acaoService.consultarAcao(listaTransacoes.get(i).getSimbolo());
-
-                        jsonObject.put("ACAO", listaTransacoes.get(i).getSimbolo());
-
-                        if(acao.getQuote().getPrice().floatValue() > listaTransacoes.get(i).getValorAtual()){ // acao desvalorizou
-                           jsonObject.put("valorizou", somatorio);
-                        }
-                        else { // acao valorizou
-                            jsonObject.put("desvalorizou", somatorio);
-                        }
-                    }
-                    catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-                }
-            }
-
-            jsonArray.put(jsonObject);
-
-        }
-
-
-        return jsonArray;
-
+    
+    public List<Transacao> receberTodos() {
+    	return facade.recebrTodos();
     }
-
-
-
-
+    
+    public List<Transacao> receberTodosPorSimbolo(String simbolo) {
+    	return facade.receberTodosPorSimbolo(simbolo);
+    }
+    
+    public List<ResultadoTransacoes> receberResultados() throws IOException, ErroConsultaApiCriptomoedaException {
+    	List<Transacao> transacoes = facade.recebrTodos();
+    	Map<String, List<Transacao>> map = transacoes.stream().collect(Collectors.groupingBy(t -> t.getSimbolo()));
+    	List<String> simbolos = new ArrayList<String>();
+    	List<ResultadoTransacoes> resultados = new ArrayList<ResultadoTransacoes>();
+    	for (Map.Entry<String, List<Transacao>> entry : map.entrySet()) {
+    		
+    		ResultadoTransacoes resultado = new ResultadoTransacoes();
+    		resultado.setSimbolo(entry.getKey());
+    		resultado.setTotalGasto(entry.getValue().stream().mapToDouble(t -> (
+    				t.getQuantidadeTransacao()*t.getValorTransacao())).sum());
+    		
+    		Transacao primeiraTransacao = entry.getValue().get(0);
+    		Double valorAtual = 0.0;
+    		if (primeiraTransacao.getTipoAtivo().equals(TipoAtivo.ACAO.name())) {
+    			Stock acao = acaoService.consultarAcao(entry.getKey());
+    			valorAtual = acao.getQuote().getPrice().doubleValue();
+    		} else if (primeiraTransacao.getTipoAtivo().equals(TipoAtivo.CRIPTOMOEDA.name())) {
+    			Criptomoeda criptomoeda = criptomoedaService.consultar(primeiraTransacao.getSimbolo());
+    			valorAtual = criptomoeda.getPreco().doubleValue();
+    		}
+    		
+    		resultado.setValorTotalAtual(entry.getValue().stream().mapToDouble(t -> (t.getQuantidadeTransacao())).sum());
+    		resultado.setValorTotalAtual(resultado.getValorTotalAtual()*valorAtual);
+    		resultado.setResultadoBruto(resultado.getValorTotalAtual() - resultado.getTotalGasto());
+    		resultado.setResultadoPercentual(100*(resultado.getValorTotalAtual()/resultado.getTotalGasto()));
+    		resultados.add(resultado);
+    	}
+    	return resultados;
+    	
+    }
+    
+    public void remover(Integer id) {
+    	facade.remover(id);
+    }
+    
+    public void removerTodos() {
+    	facade.removerTodos();
+    }
 
 }

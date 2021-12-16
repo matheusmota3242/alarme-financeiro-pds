@@ -11,7 +11,14 @@ import yahoofinance.YahooFinance;
 public class AcaoService {
 
 	public Stock consultarAcao(String simbolo) throws IOException {
-		return YahooFinance.get(simbolo);
+		Stock stock = null;
+		try {
+			stock = YahooFinance.get(simbolo);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return stock;
 	}
 	
 }

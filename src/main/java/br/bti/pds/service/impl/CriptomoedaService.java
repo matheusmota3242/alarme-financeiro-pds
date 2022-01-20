@@ -1,4 +1,4 @@
-package br.bti.pds.service;
+package br.bti.pds.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

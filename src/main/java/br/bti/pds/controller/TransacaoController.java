@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.bti.pds.exception.ErroConsultaApiCriptomoedaException;
 import br.bti.pds.model.ResultadoTransacoes;
 import br.bti.pds.model.Transacao;
-import br.bti.pds.service.TransacaoService;
+import br.bti.pds.service.impl.TransacaoService;
 
 @RestController
 @RequestMapping("transacao")

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.bti.pds.exception.AcaoInvalidaException;
 import br.bti.pds.model.ParametroAtivo;
-import br.bti.pds.service.ParametroAtivoService;
+import br.bti.pds.service.impl.ParametroAtivoService;
 import javassist.NotFoundException;
 
 

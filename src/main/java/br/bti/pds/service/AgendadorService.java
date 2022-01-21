@@ -19,7 +19,7 @@ import javassist.NotFoundException;
 import yahoofinance.Stock;
 
 @Service
-public class AgendadorService {
+public class AgendadorService extends AbstractAgendadorService {
 
 	@Autowired
 	private AcaoService acaoService;
@@ -34,9 +34,9 @@ public class AgendadorService {
 	private FCMService fcmService;
 
 	private static String CORPO_MENSAGEM = "Ativo: %s\nPreço atual: %s\nParâmetro: %s";
-
-	@Scheduled(fixedDelay = 2000)
-	public void agendarConsulta() {
+	
+	@Override
+	public void aplicarLogica() {
 		List<ParametroAtivo> parametrosAcao = parametroAtivoService.recuperarTodos();
 		parametrosAcao.forEach(parametroAtivo -> {
 			try {
@@ -44,8 +44,7 @@ public class AgendadorService {
 			} catch (AcaoInvalidaException e) {
 				System.out.println(e.getCausa());
 			}
-		});
-
+		});		
 	}
 
 	private void aplicarLogicaParaDisparoDePushNotification(ParametroAtivo parametroAtivo) throws AcaoInvalidaException {
@@ -100,4 +99,6 @@ public class AgendadorService {
 	private boolean compararValorParametroComPreco(Float valorParametroAtivo, Float precoAtivo) {
 		return valorParametroAtivo >= precoAtivo;
 	}
+
+
 }
